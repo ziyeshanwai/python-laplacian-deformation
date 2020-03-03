@@ -4,7 +4,7 @@ import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import lsqr, cg, eigsh
 
-WEIGHT = 1.0
+WEIGHT = 1
 
 
 ##############################################################
@@ -17,7 +17,7 @@ WEIGHT = 1.0
 # Inputs: mesh (polygon mesh object), anchorsIdx (indices of the anchor points)
 # Returns: L (An (N+K) x N sparse matrix, where N is the number of vertices
 # and K is the number of anchors)
-def getLaplacianMatrixUmbrella(mesh, anchorsIdx):
+def getLaplacianMatrixUmbrella(mesh, anchorsIdx, WEIGHT):
     n = mesh.VPos.shape[0]  # N x 3
     k = anchorsIdx.shape[0]
     I = []
@@ -27,7 +27,7 @@ def getLaplacianMatrixUmbrella(mesh, anchorsIdx):
     # Build sparse Laplacian Matrix coordinates and values
     for i in range(n):
         neighbors = mesh.vertices[i].getVertexNeighbors()
-        indices = map(lambda x: x.ID, neighbors)
+        indices = list(map(lambda x: x.ID, neighbors))
         z = len(indices)
         I = I + ([i] * (z + 1))  # repeated row
         J = J + indices + [i]  # column indices and this row
@@ -37,7 +37,7 @@ def getLaplacianMatrixUmbrella(mesh, anchorsIdx):
     for i in range(k):
         I = I + [n + i]
         J = J + [anchorsIdx[i]]
-        V = V + [WEIGHT]  # default anchor weight
+        V = V + [WEIGHT[i]]  # default anchor weight
 
     L = sparse.coo_matrix((V, (I, J)), shape=(n + k, n)).tocsr()
 
@@ -49,7 +49,7 @@ def getLaplacianMatrixUmbrella(mesh, anchorsIdx):
 # Inputs: mesh (polygon mesh object), anchorsIdx (indices of the anchor points)
 # Returns: L (An (N+K) x N sparse matrix, where N is the number of vertices
 # and K is the number of anchors)
-def getLaplacianMatrixCotangent(mesh, anchorsIdx):
+def getLaplacianMatrixCotangent(mesh, anchorsIdx, WEIGHT):
     n = mesh.VPos.shape[0]  # N x 3
     k = anchorsIdx.shape[0]
     I = []
@@ -60,12 +60,12 @@ def getLaplacianMatrixCotangent(mesh, anchorsIdx):
     for i in range(n):
         vertex = mesh.vertices[i]
         neighbors = vertex.getVertexNeighbors()
-        indices = map(lambda x: x.ID, neighbors)
+        indices = list(map(lambda x: x.ID, neighbors))  # python3 return list
         weights = []
         z = len(indices)
         I = I + ([i] * (z + 1))  # repeated row
         J = J + indices + [i]  # column indices and this row
-        for j in range(z):
+        for j in range(0, z):
             neighbor = neighbors[j]
             edge = getEdgeInCommon(vertex, neighbor)
             faces = [edge.f1, edge.f2]
@@ -73,7 +73,7 @@ def getLaplacianMatrixCotangent(mesh, anchorsIdx):
 
             for f in range(2):
                 if faces[f]:
-                    P = mesh.VPos[filter(lambda v: v not in [neighbor, vertex], faces[f].getVertices())[0].ID]
+                    P = mesh.VPos[list(filter(lambda v: v not in [neighbor, vertex], faces[f].getVertices()))[0].ID]
                     (u, v) = (mesh.VPos[vertex.ID] - P, mesh.VPos[neighbor.ID] - P)
                     cotangents.append(np.dot(u, v) / np.sqrt(np.sum(np.square(np.cross(u, v)))))
 
@@ -85,7 +85,7 @@ def getLaplacianMatrixCotangent(mesh, anchorsIdx):
     for i in range(k):
         I = I + [n + i]
         J = J + [anchorsIdx[i]]
-        V = V + [WEIGHT]  # default anchor weight
+        V = V + [WEIGHT[i]]  # default anchor weight
 
     L = sparse.coo_matrix((V, (I, J)), shape=(n + k, n)).tocsr()
 
@@ -97,18 +97,17 @@ def getLaplacianMatrixCotangent(mesh, anchorsIdx):
 # Inputs: mesh (polygon mesh object), anchors (a K x 3 numpy array of anchor
 # coordinates), anchorsIdx (a parallel array of the indices of the anchors)
 # Returns: Nothing (should update mesh.VPos)
-def solveLaplacianMesh(mesh, anchors, anchorsIdx, cotangent=True):
+def solveLaplacianMesh(mesh, anchors, anchorsIdx,  WEIGHT, cotangent=True):
     n = mesh.VPos.shape[0]  # N x 3
     k = anchorsIdx.shape[0]
-
     operator = (getLaplacianMatrixUmbrella, getLaplacianMatrixCotangent)
 
-    L = operator[1](mesh, anchorsIdx) if cotangent else operator[0](mesh, anchorsIdx)
+    L = operator[1](mesh, anchorsIdx, WEIGHT) if cotangent else operator[0](mesh, anchorsIdx, WEIGHT)
     delta = np.array(L.dot(mesh.VPos))
 
     # augment delta solution matrix with weighted anchors
     for i in range(k):
-        delta[n + i, :] = WEIGHT * anchors[i, :]
+        delta[n + i, :] = WEIGHT[i] * anchors[i, :]
 
     # update mesh vertices with least-squares solution
     for i in range(3):

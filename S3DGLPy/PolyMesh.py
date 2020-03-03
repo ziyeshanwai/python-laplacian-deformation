@@ -2,7 +2,7 @@
 #Purpose: To provide a simple polygon mesh class on top of numpy and PyOpenGL
 #capable of reading and writing off files, as well as rendering meshes and
 #performing some simple geometric and topological manipulations
-from Primitives3D import *
+from S3DGLPy.Primitives3D import *
 from OpenGL.GL import *
 from OpenGL.arrays import vbo
 import OpenGL.GL.shaders
@@ -1081,13 +1081,13 @@ class PolyMesh(object):
                 self.addFace(verts)
         fin.close()
     
-    def saveObjFile(self, filename, verbose = False):
+    def saveObjFile(self, filename, verbose=True):
         fout = open(filename, "w")
-        fout.write("#Generated with Chris Tralie's G-RFLCT Library\n")
-        fout.write("#http://www.github.com/ctralie/G-RFLCT\n")
+        # fout.write("#Generated with Chris Tralie's G-RFLCT Library\n")
+        # fout.write("#http://www.github.com/ctralie/G-RFLCT\n")
         fout.flush()
         for v in self.vertices:
-            fout.write("%g %g %g"%tuple(self.VPos[v.ID, :]))
+            fout.write("v %g %g %g\n"%tuple(self.VPos[v.ID, :]))
         for f in self.faces:
             verts = f.getVertices()
             fout.write("f ")
