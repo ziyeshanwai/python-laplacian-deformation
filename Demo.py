@@ -21,9 +21,9 @@ if __name__ == "__main__":
     anchors = v[anchors_ids, :]
     WEIGHT = np.ones((anchors.shape[0],), dtype=np.float32)
     target_points = np.array([[-9.645, -1.08917, 2.4884]], dtype=np.float32)
-    anchors[np.where(anchors_ids == 2528)[0], :] = target_points
+    anchors[np.where(anchors_ids == 2527)[0], :] = target_points
     anchors[np.where(anchors_ids == 2529)[0], :] = target_points
-    anchors[np.where(anchors_ids == 2530)[0], :] = target_points
+    anchors[np.where(anchors_ids == 2531)[0], :] = target_points
     anchorsIdx = np.array(anchors_ids, dtype=np.int32)
     laplacian = LaplacianDeformation(polymesh, WEIGHT)
     laplacian.solveLaplacianMesh(anchors, anchorsIdx)
