@@ -12,9 +12,9 @@ open select_points.blend
 ### step 2 run python demo.py
 
 ### the demo result
-![avator](./readme_imgs/origin.png)
-origin image
-![avator](./readme_imgs/result.png)
+![avator](./readme_imgs/origin.png)  
+origin image  
+![avator](./readme_imgs/result.png)  
 demo deformation result
 
 
