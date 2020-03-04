@@ -3,8 +3,6 @@ import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import lsqr, cg, eigsh
 
-WEIGHT = 1
-
 
 class LaplacianDeformation:
     """
@@ -98,6 +96,7 @@ class LaplacianDeformation:
         # update mesh vertices with least-squares solution
         for i in range(3):
             self.mesh.VPos[:, i] = lsqr(self.L, delta[:, i])[0]
+
 
 if __name__ == '__main__':
     print("todo test")

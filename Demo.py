@@ -18,12 +18,15 @@ if __name__ == "__main__":
     #         print(nei.ID + 1)
     v = np.array(v) - np.mean(v, axis=0)
     anchors_ids = load_pickle_file(r"./anchor_id.pkl")
+    anchors_ids = np.array(anchors_ids, dtype=np.int32)
     anchors = v[anchors_ids, :]
     WEIGHT = np.ones((anchors.shape[0],), dtype=np.float32)
-    target_points = np.array([[-9.645, -1.08917, 2.4884]], dtype=np.float32)
+    print("the origin index 2527 coordinates is {}".format(anchors[np.where(anchors_ids == 2527)[0], :]))
+    target_points = np.array([[-0.00964538, 0.15759308*5, 2.204274]], dtype=np.float32)
     anchors[np.where(anchors_ids == 2527)[0], :] = target_points
-    anchors[np.where(anchors_ids == 2529)[0], :] = target_points
-    anchors[np.where(anchors_ids == 2531)[0], :] = target_points
+    print("the changed index 2527 is {}".format(target_points))
+    # anchors[np.where(anchors_ids == 2529)[0], :] = target_points
+    # anchors[np.where(anchors_ids == 2531)[0], :] = target_points
     anchorsIdx = np.array(anchors_ids, dtype=np.int32)
     laplacian = LaplacianDeformation(polymesh, WEIGHT)
     laplacian.solveLaplacianMesh(anchors, anchorsIdx)
