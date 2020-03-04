@@ -34,7 +34,7 @@ class LaplacianLoss(object):
         self.Lx = self.laplacian(verts)
         # Reshape to BV x 3
         Lx = self.Lx.view(-1, self.Lx.size(2))
-        loss = torch.norm(Lx, p=2, dim=1).mean()
+        loss = torch.norm(Lx, p=2, dim=1).mean()  ## this is loss
         return loss
 
     def visualize(self, verts, mv=None):
