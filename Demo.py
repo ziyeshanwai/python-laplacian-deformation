@@ -6,7 +6,7 @@ from Util.util import *
 
 
 if __name__ == "__main__":
-    file_name = r"./input.obj"
+    file_name = r"./in.obj"
     polymesh = PolyMesh()
     polymesh.loadObjFile(file_name)
     v, f = loadObj(file_name)
