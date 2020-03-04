@@ -85,10 +85,13 @@ class LaplacianDeformation:
     # Inputs: mesh (polygon mesh object), anchors (a K x 3 numpy array of anchor
     # coordinates), anchorsIdx (a parallel array of the indices of the anchors)
     # Returns: Nothing (should update mesh.VPos)
-    def solveLaplacianMesh(self, anchors, anchorsIdx):
+    def solveLaplacianMesh(self, anchors, anchorsIdx, cotangent=True):
         n = self.mesh.VPos.shape[0]  # N x 3
         k = anchorsIdx.shape[0]
-        self.getLaplacianMatrixCotangent(anchorsIdx)  # get LaplacianMatrix   cotangent=True
+        if cotangent:
+            self.getLaplacianMatrixCotangent(anchorsIdx)  # get LaplacianMatrix   cotangent=True
+        else:
+            self.getLaplacianMatrixUmbrella(anchorsIdx)
         delta = np.array(self.L.dot(self.mesh.VPos))
         # augment delta solution matrix with weighted anchors
         for i in range(k):
