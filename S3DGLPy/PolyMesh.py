@@ -1076,15 +1076,13 @@ class PolyMesh(object):
                 self.addVertex([coords[0], coords[1], coords[2]])
             if fields[0] == "f":
                 #Indices are numbered starting at 1 (so need to subtract that off)
-                indices = [int(re.split("/",s)[0])-1 for s in fields[1:]]
+                indices = [int(re.split("/", s)[0])-1 for s in fields[1:]]
                 verts = [self.vertices[i] for i in indices]
                 self.addFace(verts)
         fin.close()
     
     def saveObjFile(self, filename, verbose=True):
         fout = open(filename, "w")
-        # fout.write("#Generated with Chris Tralie's G-RFLCT Library\n")
-        # fout.write("#http://www.github.com/ctralie/G-RFLCT\n")
         fout.flush()
         for v in self.vertices:
             fout.write("v %g %g %g\n"%tuple(self.VPos[v.ID, :]))
