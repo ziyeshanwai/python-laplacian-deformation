@@ -2,6 +2,8 @@ from S3DGLPy.PolyMesh import *
 import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import lsqr, cg, eigsh
+from Util.util import *
+from scipy.sparse import block_diag
 
 
 class LaplacianDeformation:
@@ -74,8 +76,8 @@ class LaplacianDeformation:
 
         # augment Laplacian matrix with anchor weights
         for i in range(k):
-            I = I + [n + i]
-            J = J + [anchorsIdx[i]]
+            I = I + [n + i]  # (0, n+k)
+            J = J + [anchorsIdx[i]]  # (0, n)
             V = V + [self.WEIGHT[i]]  # default anchor weight
 
         self.L = sparse.coo_matrix((V, (I, J)), shape=(n + k, n)).tocsr()
@@ -92,13 +94,22 @@ class LaplacianDeformation:
             self.getLaplacianMatrixCotangent(anchorsIdx)  # get LaplacianMatrix   cotangent=True
         else:
             self.getLaplacianMatrixUmbrella(anchorsIdx)
-        delta = np.array(self.L.dot(self.mesh.VPos))
+        delta = np.array(self.L.dot(self.mesh.VPos))  # numpy data (5853, 3)
+        print(type(delta))
+        print("delta shape is {}".format(delta.shape))
+        print("n is {}".format(n))
         # augment delta solution matrix with weighted anchors
         for i in range(k):
             delta[n + i, :] = self.WEIGHT[i] * anchors[i, :]
         # update mesh vertices with least-squares solution
-        for i in range(3):
-            self.mesh.VPos[:, i] = lsqr(self.L, delta[:, i])[0]
+        # save_pickle_file("L.pkl", self.L)
+        # save_pickle_file("delta.pkl", delta)
+        l = block_diag((self.L, self.L, self.L))
+        d = np.hstack((delta[:, 0], delta[:, 1], delta[:, 2]))
+        ans = lsqr(l, d)
+        self.mesh.VPos = ans[0].reshape(3, -1).T
+        # for i in range(3):
+        #     self.mesh.VPos[:, i] = lsqr(self.L, delta[:, i])[0]
 
 
 if __name__ == '__main__':
